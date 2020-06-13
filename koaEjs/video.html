@@ -1,0 +1,145 @@
+<!DOCTYPE html> 
+<html>  
+  <head>  
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>  
+    <style>
+      #canvas,#video {
+        margin-right: 10px;  
+        background: #fff;  
+      }      
+      .box {  
+        overflow: hidden;  
+        margin-bottom: 10px;  
+      }
+    </style>
+  </head>  
+  <body>  
+    <div class="box">
+      <div>
+        <button id="live">开始录制</button>
+        <button id="stop">完成录制</button>
+        <button id="snap">截图</button>
+      </div>
+      <div>
+        <video id="video" width="400" height="300"></video>
+      </div>
+      <div id="v">
+        <p>录制视频：</p>
+        <video id="show" width="400" height="300" autoplay controls></video>
+      </div>
+       <div>
+        <p>拍摄相片</p>
+        <a id="download" download>下载</a>
+        <canvas id="canvas"></canvas>
+      </div>
+    </div>
+    <script>  
+      var video = document.getElementById('video');
+      var show = document.getElementById('show');
+      var v = document.getElementById('v');
+      var canvas = document.getElementById('canvas');  
+      var ctx = canvas.getContext('2d');  
+      var width = video.width;  
+      var height = video.height;  
+      canvas.width = width;  
+      canvas.height = height;   
+      function liveVideo(){ 
+        var URL = window.URL || window.webkitURL;   // 获取到window.URL对象
+        // var getUserMedia = navigator.getUserMedia || navigator.mediaDevices.getUserMedia
+        if (navigator.getUserMedia) {
+          alert('getUserMedia:', navigator.getUserMedia.toString())
+          navigator.getUserMedia({  
+            audio: true,
+            video: true  
+          }, function(stream){
+            context(stream)
+            try {
+              video.src = URL.createObjectURL(stream);
+            } catch (err) {
+              console.log(err)
+              video.srcObject = stream
+            }
+            // 将获取到的视频流对象转换为地址
+            video.play()  // 播放
+            //点击截图     
+            document.getElementById("snap").addEventListener('click', function() { 
+              v.style.display = "none"
+              ctx.drawImage(video, 0, 0, width, height);  
+              var url = canvas.toDataURL('image/png');  
+              document.getElementById('download').href = url;  
+            })
+          }, function(error){  
+            console.log(error.name || error)
+            alert(error)
+          })
+        } else {
+          alert('mediaDevices:', navigator.mediaDevices.getUserMedia.toString())
+          navigator.mediaDevices.getUserMedia({  
+            audio: true,
+            video: true  
+          }).then(function(stream){
+            context(stream)
+            alert('then？？？')
+            try {
+              video.src = URL.createObjectURL(stream);
+            } catch (err) {
+              console.log(err)
+              video.srcObject = stream
+            }
+            // 将获取到的视频流对象转换为地址
+            video.play()  // 播放
+            //点击截图     
+            document.getElementById("snap").addEventListener('click', function() { 
+              v.style.display = "none"
+              ctx.drawImage(video, 0, 0, width, height);  
+              var url = canvas.toDataURL('image/png');  
+              document.getElementById('download').href = url;  
+            });
+          }).catch(function(error){  
+            console.log(error.name || error); 
+            alert(error)
+          })
+        }  
+      }
+      liveVideo();
+      document.getElementById("live").addEventListener('click',function(){  
+        recorder.start();
+      })
+      document.getElementById("stop").addEventListener('click',function(){  recorder.stop()
+      })
+
+      function context (stream) {
+        alert('成功获取stream')
+        recorder = new MediaRecorder(stream);
+        recorder.ondataavailable = event => {
+          let blob = new Blob([event.data], {
+            type: 'video/mp4'
+          })
+          alert('视频完成')
+          show.src = window.URL.createObjectURL(blob)
+          v.style.display = "block"
+          // saveMedia(blob);
+        }
+      }  
+      function saveMedia (blob) {
+        console.log(blob)
+        let reader = new FileReader();
+        let _t = this;
+        reader.onload = function () {
+          let buffer = new Buffer(reader.result)
+          console.log(buffer)
+          debugger
+          // fs.writeFile(_t.mediaOutputPath, buffer, {}, (err, res) => {
+          //   if (err) {
+          //     console.error(err);
+          //     return
+          //   }
+          // })
+        }
+        reader.readAsArrayBuffer(blob)
+      }
+    </script>  
+  </body> 
+</html>

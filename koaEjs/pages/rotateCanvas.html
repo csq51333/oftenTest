@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title></title>
+        <style>
+            body{background: black;}
+            div{background: wheat;}
+        </style>
+        <script>
+            window.onload=function(){
+                var aput=document.getElementsByTagName('input');
+                var aimg=document.getElementById('img1');
+                var bimg=new Image();
+                var inow=0;
+                bimg.onload=function(){
+                    draw(aimg);
+                };
+                bimg.src=aimg.src;
+                function draw(obj){
+                    var oc=document.createElement('canvas');
+                    var gc=oc.getContext('2d');
+                    oc.width=obj.width;
+                    oc.height=obj.height;
+                    obj.parentNode.replaceChild(oc,obj);
+                    gc.drawImage(obj,0,0);
+                                        //第二个按钮，点击一下让图片顺时针旋转90度
+                    aput[1].onclick=function(){
+                        if(inow==3){
+                            inow=0;
+                        }else{
+                            inow++;
+                        }
+                        
+                        toChang();
+                    };
+                    //逆向旋转
+                    aput[0].onclick=function(){
+                        if(inow==0){
+                            inow=3;
+                        }else{
+                            inow--;
+                        }
+                        
+                        toChang();
+                    };
+                    function toChang(){
+                        var canvas = document.createElement('canvas')
+                        switch(inow){
+                            case 1:
+                            oc.width=obj.height;
+                            oc.height=obj.width;
+                            gc.rotate(90*Math.PI/180);
+                            gc.drawImage(obj,0,-obj.height);//调整图片位置
+                            break;
+                            
+                            case 2:
+                            oc.width=obj.width;
+                            oc.height=obj.height;
+                            gc.rotate(180*Math.PI/180);
+                            gc.drawImage(obj,-obj.width,-obj.height);
+                            break;
+                            
+                            case 3:
+                            oc.width=obj.height;
+                            oc.height=obj.width;
+                            gc.rotate(270*Math.PI/180);
+                            gc.drawImage(obj,-obj.width,0);
+                            break;
+                            
+                            case 0:
+                            oc.width=obj.width;
+                            oc.height=obj.height;
+                            gc.rotate(0);
+                            gc.drawImage(obj,0,0);
+                            break;
+                        }
+                        var base64 = canvas.toDataURL('image/png');
+                        console.log(base64)
+                        var file = dataURLtoFile(base64, '')
+                        console.log(file)
+                        debugger
+                    }
+                }
+            }
+            function dataURLtoFile(dataurl, filename) { //将base64转换为文件
+                var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                    bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+                while(n--){
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                return new File([u8arr], filename, {type:mime});
+            }
+        </script>
+    </head>
+    <body>
+     <input type="button" value="左转" />
+     <input type="button" value="右转" />
+     <div>
+         <img src="1.png" id="img1"/>
+     </div>
+    </body>
+</html>
